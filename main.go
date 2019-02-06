@@ -15,12 +15,12 @@ import (
 )
 
 func main() {
-	cfg, err := LoadConfig()
+	cfg, err := LoadCredentials()
 	if err != nil {
 		log.Fatalln("failed load config, ", err)
 	}
 
-	if err := TunnelConnect(cfg.Profiles[0]); err != nil {
+	if err := TunnelConnect(cfg.Credentials[0]); err != nil {
 		log.Fatalln("failed connect, ", err)
 		os.Exit(1)
 	}
@@ -29,7 +29,7 @@ func main() {
 
 type ProfileType int
 
-type Profile struct {
+type Credential struct {
 	Alias           string      `toml:"alis"`
 	Type            ProfileType `toml:"type"`
 	DBHost          string      `toml:"db_host"`
@@ -53,28 +53,28 @@ func (endpoint *Endpoint) String() string {
 	return fmt.Sprintf("%s:%d", endpoint.Host, endpoint.Port)
 }
 
-func (c *Profile) SSHEndpoint() *Endpoint {
+func (c *Credential) SSHEndpoint() *Endpoint {
 	return &Endpoint{
 		Host: c.SSHHost,
 		Port: c.SSHPort,
 	}
 }
 
-func (c *Profile) DBEndpoint() *Endpoint {
+func (c *Credential) DBEndpoint() *Endpoint {
 	return &Endpoint{
 		Host: c.DBHost,
 		Port: c.DBPort,
 	}
 }
 
-func (c *Profile) LocalEndpoint() *Endpoint {
+func (c *Credential) LocalEndpoint() *Endpoint {
 	return &Endpoint{
 		Host: "127.0.0.1",
 		Port: 0,
 	}
 }
 
-func (c *Profile) SSHClientConfig() *ssh.ClientConfig {
+func (c *Credential) SSHClientConfig() *ssh.ClientConfig {
 	return &ssh.ClientConfig{
 		User: c.SSHUser,
 		Auth: []ssh.AuthMethod{
@@ -84,7 +84,7 @@ func (c *Profile) SSHClientConfig() *ssh.ClientConfig {
 	}
 }
 
-func (c *Profile) MySQLCommand() *exec.Cmd {
+func (c *Credential) MySQLCommand() *exec.Cmd {
 	return exec.Command(
 		"mysql",
 		"-h",
@@ -99,7 +99,7 @@ func (c *Profile) MySQLCommand() *exec.Cmd {
 	)
 }
 
-func (c *Profile) MySQLTunnelCommand(port string) *exec.Cmd {
+func (c *Credential) MySQLTunnelCommand(port string) *exec.Cmd {
 	return exec.Command(
 		"mysql",
 		"-h",
@@ -140,7 +140,7 @@ func StanderdConnect(cmd *exec.Cmd) error {
 	return nil
 }
 
-func TunnelConnect(profile *Profile) error {
+func TunnelConnect(profile *Credential) error {
 	var serverConn *ssh.Client
 	listener, err := net.Listen("tcp", profile.LocalEndpoint().String())
 	if err != nil {

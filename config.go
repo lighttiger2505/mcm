@@ -9,18 +9,18 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-type Config struct {
-	Profiles []*Profile
+type Credentials struct {
+	Credentials []*Credential
 }
 
-func LoadConfig() (*Config, error) {
+func LoadCredentials() (*Credentials, error) {
 	// Find config file path
-	cfgPath, err := FindConfigPath()
+	cfgPath, err := FindCredentialPath()
 	if err != nil {
 		return nil, err
 	}
 
-	cfg := &Config{}
+	cfg := &Credentials{}
 	if _, err := os.Stat(cfgPath); err == nil {
 		// Load exist config file
 		_, err := toml.DecodeFile(cfgPath, cfg)
@@ -44,7 +44,7 @@ func LoadConfig() (*Config, error) {
 	return cfg, nil
 }
 
-func FindConfigPath() (string, error) {
+func FindCredentialPath() (string, error) {
 	var dir string
 	if runtime.GOOS == "windows" {
 		dir = os.Getenv("APPDATA")
@@ -58,6 +58,6 @@ func FindConfigPath() (string, error) {
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		return "", fmt.Errorf("cannot create directory, %v", err)
 	}
-	cfgPath := filepath.Join(dir, "config.toml")
+	cfgPath := filepath.Join(dir, "credentials.toml")
 	return cfgPath, nil
 }
