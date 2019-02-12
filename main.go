@@ -38,14 +38,14 @@ func newApp() *cli.App {
 	app.Commands = []cli.Command{
 		cli.Command{
 			Name:    "connect",
-			Aliases: []string{"c"},
+			Aliases: []string{"n"},
 			Usage:   "connect DB",
 			Action:  connect,
 		},
 		cli.Command{
 			Name:    "list",
 			Aliases: []string{"l"},
-			Usage:   "list DB",
+			Usage:   "list DB credentials",
 			Action:  list,
 		},
 		cli.Command{
