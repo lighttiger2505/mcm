@@ -48,8 +48,32 @@ func newApp() *cli.App {
 			Usage:   "list DB",
 			Action:  list,
 		},
+		cli.Command{
+			Name:    "cred",
+			Aliases: []string{"r"},
+			Usage:   "modifi DB credential",
+			Action:  cred,
+		},
 	}
 	return app
+}
+
+func cred(c *cli.Context) error {
+	credPath, err := FindCredentialPath()
+	if err != nil {
+		return err
+	}
+
+	editorEnv := os.Getenv("EDITOR")
+	if editorEnv == "" {
+		editorEnv = "vim"
+	}
+
+	cmd := exec.Command(editorEnv, credPath)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
 
 func list(c *cli.Context) error {
