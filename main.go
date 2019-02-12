@@ -41,8 +41,27 @@ func newApp() *cli.App {
 			Usage:   "connect DB",
 			Action:  connect,
 		},
+		cli.Command{
+			Name:    "list",
+			Aliases: []string{"l"},
+			Usage:   "list DB",
+			Action:  list,
+		},
 	}
 	return app
+}
+
+func list(c *cli.Context) error {
+	creds, err := LoadCredentials()
+	if err != nil {
+		return fmt.Errorf("failed load credentials, %s", err)
+	}
+
+	for _, cred := range creds.Credentials {
+		fmt.Fprintln(os.Stdout, cred.Alias)
+	}
+
+	return nil
 }
 
 func connect(c *cli.Context) error {
