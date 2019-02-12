@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -11,6 +12,15 @@ import (
 
 type Credentials struct {
 	Credentials []*Credential
+}
+
+func (c *Credentials) GetCredential(alias string) (*Credential, error) {
+	for _, cred := range c.Credentials {
+		if alias == cred.Alias {
+			return cred, nil
+		}
+	}
+	return nil, errors.New("not found credential")
 }
 
 func LoadCredentials() (*Credentials, error) {

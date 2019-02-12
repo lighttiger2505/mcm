@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -65,12 +66,22 @@ func list(c *cli.Context) error {
 }
 
 func connect(c *cli.Context) error {
-	cfg, err := LoadCredentials()
-	if err != nil {
-		return fmt.Errorf("failed load config, %s", err)
+	args := c.Args()
+	if len(args) == 0 {
+		return errors.New("The required arguments were not provided: <alias>")
 	}
 
-	if err := TunnelConnect(cfg.Credentials[0]); err != nil {
+	creds, err := LoadCredentials()
+	if err != nil {
+		return err
+	}
+
+	cred, err := creds.GetCredential(args[0])
+	if err != nil {
+		return err
+	}
+
+	if err := TunnelConnect(cred); err != nil {
 		return fmt.Errorf("failed connect, %s", err)
 	}
 
