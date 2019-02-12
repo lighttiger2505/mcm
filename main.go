@@ -11,20 +11,51 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/urfave/cli"
 	"golang.org/x/crypto/ssh"
 )
 
 func main() {
+	err := newApp().Run(os.Args)
+	var exitCode = 0
+	if err != nil {
+		fmt.Fprint(os.Stderr, err.Error())
+		exitCode = 255
+	}
+	os.Exit(exitCode)
+}
+
+func newApp() *cli.App {
+	app := cli.NewApp()
+	app.Name = "mcm"
+	app.HelpName = "mcm"
+	app.Usage = "cli tool for mysql connection management."
+	// app.UsageText = "liary [options] [write content for diary]"
+	app.Version = "0.0.1"
+	app.Author = "lighttiger2505"
+	app.Email = "lighttiger2505@gmail.com"
+	app.Commands = []cli.Command{
+		cli.Command{
+			Name:    "connect",
+			Aliases: []string{"c"},
+			Usage:   "connect DB",
+			Action:  connect,
+		},
+	}
+	return app
+}
+
+func connect(c *cli.Context) error {
 	cfg, err := LoadCredentials()
 	if err != nil {
-		log.Fatalln("failed load config, ", err)
+		return fmt.Errorf("failed load config, %s", err)
 	}
 
 	if err := TunnelConnect(cfg.Credentials[0]); err != nil {
-		log.Fatalln("failed connect, ", err)
-		os.Exit(1)
+		return fmt.Errorf("failed connect, %s", err)
 	}
-	os.Exit(0)
+
+	return nil
 }
 
 type ProfileType int
