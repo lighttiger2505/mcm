@@ -32,6 +32,7 @@ type ProfileType int
 type Credential struct {
 	Alias           string      `toml:"alis"`
 	Type            ProfileType `toml:"type"`
+	DBCmd           string      `toml:"db_cmd"`
 	DBHost          string      `toml:"db_host"`
 	DBPort          int         `toml:"db_port"`
 	DBUser          string      `toml:"db_user"`
@@ -86,7 +87,7 @@ func (c *Credential) SSHClientConfig() *ssh.ClientConfig {
 
 func (c *Credential) MySQLCommand() *exec.Cmd {
 	return exec.Command(
-		"mysql",
+		c.DBCmd,
 		"-h",
 		c.DBHost,
 		"-P",
@@ -101,7 +102,7 @@ func (c *Credential) MySQLCommand() *exec.Cmd {
 
 func (c *Credential) MySQLTunnelCommand(port string) *exec.Cmd {
 	return exec.Command(
-		"mysql",
+		c.DBCmd,
 		"-h",
 		"127.0.0.1",
 		"-P",
