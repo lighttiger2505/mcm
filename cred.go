@@ -13,19 +13,14 @@ import (
 type ProfileType int
 
 type Credential struct {
-	Alias           string      `toml:"alis"`
-	Type            ProfileType `toml:"type"`
-	DBCmd           string      `toml:"db_cmd"`
-	DBHost          string      `toml:"db_host"`
-	DBPort          int         `toml:"db_port"`
-	DBUser          string      `toml:"db_user"`
-	DBPass          string      `toml:"db_pass"`
-	DBDefaultSchema string      `toml:"db_default_schema"`
-	SSHHost         string      `toml:"ssh_host"`
-	SSHPort         int         `toml:"ssh_port"`
-	SSHUser         string      `toml:"ssh_user"`
-	SSHPass         string      `toml:"ssh_pass"`
-	SSHKey          string      `toml:"ssh_key"`
+	Alias           string       `toml:"alias"`
+	DBCmd           string       `toml:"cmd"`
+	DBHost          string       `toml:"host"`
+	DBPort          int          `toml:"port"`
+	DBUser          string       `toml:"user"`
+	DBPass          string       `toml:"pass"`
+	DBDefaultSchema string       `toml:"default_schema"`
+	TunelCfg        *TunelConfig `toml:"tunel_config"`
 }
 
 type Endpoint struct {
@@ -38,10 +33,7 @@ func (endpoint *Endpoint) String() string {
 }
 
 func (c *Credential) SSHEndpoint() *Endpoint {
-	return &Endpoint{
-		Host: c.SSHHost,
-		Port: c.SSHPort,
-	}
+	return c.TunelCfg.Endpoint()
 }
 
 func (c *Credential) DBEndpoint() *Endpoint {
@@ -59,13 +51,7 @@ func (c *Credential) LocalEndpoint() *Endpoint {
 }
 
 func (c *Credential) SSHClientConfig() *ssh.ClientConfig {
-	return &ssh.ClientConfig{
-		User: c.SSHUser,
-		Auth: []ssh.AuthMethod{
-			publicKeyFile(c.SSHKey),
-		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-	}
+	return c.SSHClientConfig()
 }
 
 func (c *Credential) MySQLCommand() *exec.Cmd {
@@ -96,6 +82,31 @@ func (c *Credential) MySQLTunnelCommand(port string) *exec.Cmd {
 		c.DBDefaultSchema,
 		fmt.Sprintf("-p%s", c.DBPass),
 	)
+}
+
+type TunelConfig struct {
+	Host string `toml:"host"`
+	Port int    `toml:"port"`
+	User string `toml:"user"`
+	Pass string `toml:"pass"`
+	Key  string `toml:"key"`
+}
+
+func (c *TunelConfig) Endpoint() *Endpoint {
+	return &Endpoint{
+		Host: c.Host,
+		Port: c.Port,
+	}
+}
+
+func (c *TunelConfig) SSHClientConfig() *ssh.ClientConfig {
+	return &ssh.ClientConfig{
+		User: c.User,
+		Auth: []ssh.AuthMethod{
+			publicKeyFile(c.Key),
+		},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
 }
 
 func publicKeyFile(file string) ssh.AuthMethod {
