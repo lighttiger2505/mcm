@@ -55,33 +55,37 @@ func (c *Credential) SSHClientConfig() *ssh.ClientConfig {
 }
 
 func (c *Credential) MySQLCommand() *exec.Cmd {
-	return exec.Command(
-		c.DBCmd,
+	args := []string{
 		"-h",
 		c.DBHost,
-		"-P",
-		strconv.Itoa(c.DBPort),
 		"-u",
 		c.DBUser,
-		"-D",
-		c.DBDefaultSchema,
 		fmt.Sprintf("-p%s", c.DBPass),
-	)
+	}
+	if c.DBPort != 0 {
+		args = append(args, []string{"-P", strconv.Itoa(c.DBPort)}...)
+	}
+	if c.DBDefaultSchema != "" {
+		args = append(args, []string{"-D", c.DBDefaultSchema}...)
+	}
+	return exec.Command(c.DBCmd, args...)
 }
 
 func (c *Credential) MySQLTunnelCommand(port string) *exec.Cmd {
-	return exec.Command(
-		c.DBCmd,
+	args := []string{
 		"-h",
 		"127.0.0.1",
-		"-P",
-		port,
 		"-u",
 		c.DBUser,
-		"-D",
-		c.DBDefaultSchema,
 		fmt.Sprintf("-p%s", c.DBPass),
-	)
+	}
+	if c.DBPort != 0 {
+		args = append(args, []string{"-P", port}...)
+	}
+	if c.DBDefaultSchema != "" {
+		args = append(args, []string{"-D", c.DBDefaultSchema}...)
+	}
+	return exec.Command(c.DBCmd, args...)
 }
 
 type TunelConfig struct {
