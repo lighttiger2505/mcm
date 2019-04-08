@@ -103,6 +103,12 @@ func connect(c *cli.Context) error {
 		return err
 	}
 
+	serverConn, err := ssh.Dial("tcp", cred.SSHEndpoint().String(), cred.SSHClientConfig())
+	if err != nil {
+		return fmt.Errorf("failed ssh connection, %s", err)
+	}
+	serverConn.Close()
+
 	if err := TunnelConnect(cred); err != nil {
 		return fmt.Errorf("failed connect, %s", err)
 	}
