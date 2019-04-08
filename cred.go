@@ -51,7 +51,7 @@ func (c *Credential) LocalEndpoint() *Endpoint {
 }
 
 func (c *Credential) SSHClientConfig() *ssh.ClientConfig {
-	return c.SSHClientConfig()
+	return c.TunelCfg.SSHClientConfig()
 }
 
 func (c *Credential) MySQLCommand() *exec.Cmd {
