@@ -13,14 +13,14 @@ import (
 type ProfileType int
 
 type Credential struct {
-	Alias           string       `toml:"alias"`
-	DBCmd           string       `toml:"cmd"`
-	DBHost          string       `toml:"host"`
-	DBPort          int          `toml:"port"`
-	DBUser          string       `toml:"user"`
-	DBPass          string       `toml:"pass"`
-	DBDefaultSchema string       `toml:"default_schema"`
-	TunelCfg        *TunelConfig `toml:"tunel_config"`
+	Alias         string       `toml:"alias"`
+	Cmd           string       `toml:"cmd"`
+	Host          string       `toml:"host"`
+	Port          int          `toml:"port"`
+	User          string       `toml:"user"`
+	Pass          string       `toml:"pass"`
+	DefaultSchema string       `toml:"default_schema"`
+	TunelCfg      *TunelConfig `toml:"tunel_config"`
 }
 
 type Endpoint struct {
@@ -38,8 +38,8 @@ func (c *Credential) SSHEndpoint() *Endpoint {
 
 func (c *Credential) DBEndpoint() *Endpoint {
 	return &Endpoint{
-		Host: c.DBHost,
-		Port: c.DBPort,
+		Host: c.Host,
+		Port: c.Port,
 	}
 }
 
@@ -57,18 +57,18 @@ func (c *Credential) SSHClientConfig() *ssh.ClientConfig {
 func (c *Credential) MySQLCommand() *exec.Cmd {
 	args := []string{
 		"-h",
-		c.DBHost,
+		c.Host,
 		"-u",
-		c.DBUser,
-		fmt.Sprintf("-p%s", c.DBPass),
+		c.User,
+		fmt.Sprintf("-p%s", c.Pass),
 	}
-	if c.DBPort != 0 {
-		args = append(args, []string{"-P", strconv.Itoa(c.DBPort)}...)
+	if c.Port != 0 {
+		args = append(args, []string{"-P", strconv.Itoa(c.Port)}...)
 	}
-	if c.DBDefaultSchema != "" {
-		args = append(args, []string{"-D", c.DBDefaultSchema}...)
+	if c.DefaultSchema != "" {
+		args = append(args, []string{"-D", c.DefaultSchema}...)
 	}
-	return exec.Command(c.DBCmd, args...)
+	return exec.Command(c.Cmd, args...)
 }
 
 func (c *Credential) MySQLTunnelCommand(port string) *exec.Cmd {
@@ -76,16 +76,16 @@ func (c *Credential) MySQLTunnelCommand(port string) *exec.Cmd {
 		"-h",
 		"127.0.0.1",
 		"-u",
-		c.DBUser,
-		fmt.Sprintf("-p%s", c.DBPass),
+		c.User,
+		fmt.Sprintf("-p%s", c.Pass),
 	}
-	if c.DBPort != 0 {
+	if c.Port != 0 {
 		args = append(args, []string{"-P", port}...)
 	}
-	if c.DBDefaultSchema != "" {
-		args = append(args, []string{"-D", c.DBDefaultSchema}...)
+	if c.DefaultSchema != "" {
+		args = append(args, []string{"-D", c.DefaultSchema}...)
 	}
-	return exec.Command(c.DBCmd, args...)
+	return exec.Command(c.Cmd, args...)
 }
 
 type TunelConfig struct {
