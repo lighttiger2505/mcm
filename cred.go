@@ -3,8 +3,11 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"strings"
+
 	"log"
 	"os/exec"
+	"os/user"
 	"strconv"
 
 	"golang.org/x/crypto/ssh"
@@ -107,23 +110,34 @@ func (c *TunelConfig) SSHClientConfig() *ssh.ClientConfig {
 	return &ssh.ClientConfig{
 		User: c.User,
 		Auth: []ssh.AuthMethod{
-			publicKeyFile(c.Key),
+			publicKeyFile(c.Key, c.Pass),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 }
 
-func publicKeyFile(file string) ssh.AuthMethod {
+func publicKeyFile(file, passPhrase string) ssh.AuthMethod {
+	usr, _ := user.Current()
+	file = strings.Replace(file, "~", usr.HomeDir, 1)
 	buffer, err := ioutil.ReadFile(file)
 	if err != nil {
-		log.Fatalln(fmt.Sprintf("Cannot read SSH public key file %s", file))
+		log.Fatalln(fmt.Sprintf("Cannot read SSH public key file %s.\n%s", file, err))
 		return nil
 	}
 
-	key, err := ssh.ParsePrivateKey(buffer)
-	if err != nil {
-		log.Fatalln(fmt.Sprintf("Cannot parse SSH public key file %s", file))
-		return nil
+	var key ssh.Signer
+	if passPhrase != "" {
+		key, err = ssh.ParsePrivateKeyWithPassphrase(buffer, []byte(passPhrase))
+		if err != nil {
+			log.Fatalln(fmt.Sprintf("Cannot parse SSH public key file %s.\n%s", file, err))
+			return nil
+		}
+	} else {
+		key, err = ssh.ParsePrivateKey(buffer)
+		if err != nil {
+			log.Fatalln(fmt.Sprintf("Cannot parse SSH public key file %s.\n%s", file, err))
+			return nil
+		}
 	}
 	return ssh.PublicKeys(key)
 }
