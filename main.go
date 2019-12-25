@@ -103,26 +103,26 @@ func connect(c *cli.Context) error {
 		return err
 	}
 
-	serverConn, err := ssh.Dial("tcp", cred.SSHEndpoint().String(), cred.SSHClientConfig())
-	if err != nil {
-		return fmt.Errorf("failed ssh connection, %s", err)
-	}
-	serverConn.Close()
-
-	if err := TunnelConnect(cred); err != nil {
-		return fmt.Errorf("failed connect, %s", err)
+	if cred.TunelCfg != nil {
+		if err := TunnelConnect(cred); err != nil {
+			return err
+		}
+	} else {
+		if err := StanderdConnect(cred); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func StanderdConnect(cmd *exec.Cmd) error {
-	c := cmd
+func StanderdConnect(profile *Credential) error {
+	c := profile.MySQLCommand()
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
 	if err := c.Run(); err != nil {
-		return fmt.Errorf("command error, %s\n", err)
+		return fmt.Errorf("command error, %s", err)
 	}
 	return nil
 }
