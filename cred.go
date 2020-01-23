@@ -63,7 +63,9 @@ func (c *Credential) MySQLCommand() *exec.Cmd {
 		c.Host,
 		"-u",
 		c.User,
-		fmt.Sprintf("-p%s", c.Pass),
+	}
+	if c.Pass != "" {
+		args = append(args, fmt.Sprintf("-p%s", c.Pass))
 	}
 	if c.Port != 0 {
 		args = append(args, []string{"-P", strconv.Itoa(c.Port)}...)
