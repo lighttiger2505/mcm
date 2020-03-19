@@ -20,6 +20,7 @@ type Credential struct {
 	Cmd           string       `toml:"cmd"`
 	Host          string       `toml:"host"`
 	Port          int          `toml:"port"`
+	Socket        string       `toml:"socket"`
 	User          string       `toml:"user"`
 	Pass          string       `toml:"pass"`
 	DefaultSchema string       `toml:"default_schema"`
@@ -59,13 +60,17 @@ func (c *Credential) SSHClientConfig() *ssh.ClientConfig {
 
 func (c *Credential) MySQLCommand() *exec.Cmd {
 	args := []string{
-		"-h",
-		c.Host,
 		"-u",
 		c.User,
 	}
 	if c.Pass != "" {
 		args = append(args, fmt.Sprintf("-p%s", c.Pass))
+	}
+	if c.Host != "" {
+		args = append(args, []string{"-h", c.Host}...)
+	}
+	if c.Socket != "" {
+		args = append(args, []string{"-S", c.Socket}...)
 	}
 	if c.Port != 0 {
 		args = append(args, []string{"-P", strconv.Itoa(c.Port)}...)
