@@ -128,7 +128,7 @@ func publicKeyFile(file, passPhrase string) ssh.AuthMethod {
 	file = strings.Replace(file, "~", usr.HomeDir, 1)
 	buffer, err := ioutil.ReadFile(file)
 	if err != nil {
-		log.Fatalln(fmt.Sprintf("Cannot read SSH public key file %s.\n%s", file, err))
+		log.Fatalln(fmt.Sprintf("cannot read SSH private key file %s, %s", file, err))
 		return nil
 	}
 
@@ -136,13 +136,13 @@ func publicKeyFile(file, passPhrase string) ssh.AuthMethod {
 	if passPhrase != "" {
 		key, err = ssh.ParsePrivateKeyWithPassphrase(buffer, []byte(passPhrase))
 		if err != nil {
-			log.Fatalln(fmt.Sprintf("Cannot parse SSH public key file %s.\n%s", file, err))
+			log.Fatalln(fmt.Sprintf("cannot parse SSH private key file with passphrase, %s, %s", file, err))
 			return nil
 		}
 	} else {
 		key, err = ssh.ParsePrivateKey(buffer)
 		if err != nil {
-			log.Fatalln(fmt.Sprintf("Cannot parse SSH public key file %s.\n%s", file, err))
+			log.Fatalln(fmt.Sprintf("cannot parse SSH private key file, %s, %s", file, err))
 			return nil
 		}
 	}

@@ -90,7 +90,7 @@ func list(c *cli.Context) error {
 func connect(c *cli.Context) error {
 	args := c.Args()
 	if len(args) == 0 {
-		return errors.New("The required arguments were not provided: <alias>")
+		return errors.New("required arguments were not provided: <alias>")
 	}
 
 	creds, err := LoadCredentials()
@@ -131,7 +131,7 @@ func TunnelConnect(profile *Credential) error {
 	var serverConn *ssh.Client
 	listener, err := net.Listen("tcp", profile.LocalEndpoint().String())
 	if err != nil {
-		log.Fatalln("Local listen error, ", err)
+		return fmt.Errorf("cannot listen local connection, %s", err)
 	}
 	defer listener.Close()
 
@@ -143,14 +143,14 @@ func TunnelConnect(profile *Credential) error {
 			Ready <- Q{}
 			localConn, err := listener.Accept()
 			if err != nil {
-				Done <- fmt.Errorf("Listener Accept error, %s\n", err)
+				Done <- fmt.Errorf("cannot accept local listener, %s", err)
 				return
 			}
 
 			if serverConn == nil {
 				serverConn, err = ssh.Dial("tcp", profile.SSHEndpoint().String(), profile.SSHClientConfig())
 				if err != nil {
-					Done <- fmt.Errorf("Server dial error, %s\n", err)
+					Done <- fmt.Errorf("cannot dial database server, %s", err)
 					return
 				}
 			}
@@ -170,7 +170,7 @@ func TunnelConnect(profile *Credential) error {
 		c.Stdout = os.Stdout
 		c.Stderr = os.Stderr
 		if err := c.Run(); err != nil {
-			return fmt.Errorf("command error, %s\n", err)
+			return fmt.Errorf("failed execute command, %s", err)
 		}
 	case err = <-Done:
 		if serverConn != nil {
@@ -184,13 +184,13 @@ func TunnelConnect(profile *Credential) error {
 func forward(localConn net.Conn, serverConn *ssh.Client, dbserver *Endpoint) error {
 	remoteConn, err := serverConn.Dial("tcp", dbserver.String())
 	if err != nil {
-		return fmt.Errorf("Remote dial error: %s\n", err)
+		return fmt.Errorf("cannot dial remote connection, %s", err)
 	}
 
 	copyConn := func(writer, reader net.Conn) {
 		_, err := io.Copy(writer, reader)
 		if err != nil {
-			log.Printf("io.Copy error, %s\n", err)
+			log.Printf("cannot copy io stream on the ssh tunnel, %s", err)
 		}
 	}
 
