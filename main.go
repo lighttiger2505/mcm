@@ -34,19 +34,19 @@ func newApp() *cli.App {
 	app.Author = "lighttiger2505"
 	app.Email = "lighttiger2505@gmail.com"
 	app.Commands = []cli.Command{
-		cli.Command{
+		{
 			Name:    "connect",
 			Aliases: []string{"n"},
 			Usage:   "connect DB",
 			Action:  connect,
 		},
-		cli.Command{
+		{
 			Name:    "list",
 			Aliases: []string{"l"},
 			Usage:   "list DB credentials",
 			Action:  list,
 		},
-		cli.Command{
+		{
 			Name:    "cred",
 			Aliases: []string{"r"},
 			Usage:   "modifi DB credential",
