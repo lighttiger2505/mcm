@@ -117,7 +117,15 @@ func connect(c *cli.Context) error {
 }
 
 func StanderdConnect(profile *Credential) error {
-	c := profile.MySQLCommand()
+	var c *exec.Cmd
+	switch profile.Cmd {
+	case "mysql", "mycli":
+		c = profile.MySQLCommand()
+	case "psql", "pgcli":
+		c = profile.PostgreSQLCommand()
+	default:
+		return fmt.Errorf("invalid command, %s", profile.Cmd)
+	}
 	c.Stdin = os.Stdin
 	c.Stdout = os.Stdout
 	c.Stderr = os.Stderr
@@ -165,7 +173,17 @@ func TunnelConnect(profile *Credential) error {
 	select {
 	case <-Ready:
 		lstr := strings.Split(listener.Addr().String(), ":")
-		c := profile.MySQLTunnelCommand(lstr[1])
+		port := lstr[1]
+
+		var c *exec.Cmd
+		switch profile.Cmd {
+		case "mysql", "mycli":
+			c = profile.MySQLTunnelCommand(port)
+		case "psql", "pgcli":
+			c = profile.PostgreSQLTunnelCommand(port)
+		default:
+			return fmt.Errorf("invalid command, %s", profile.Cmd)
+		}
 		c.Stdin = os.Stdin
 		c.Stdout = os.Stdout
 		c.Stderr = os.Stderr

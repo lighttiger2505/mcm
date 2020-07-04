@@ -98,6 +98,39 @@ func (c *Credential) MySQLTunnelCommand(port string) *exec.Cmd {
 	return exec.Command(c.Cmd, args...)
 }
 
+func (c *Credential) PostgreSQLCommand() *exec.Cmd {
+	host := "127.0.0.1"
+	if c.Host != "" {
+		host = c.Host
+	}
+	port := 15432
+	if c.Port != 0 {
+		port = c.Port
+	}
+	arg := fmt.Sprintf(
+		"postgresql://%s:%s@%s:%d/%s",
+		c.User,
+		c.Pass,
+		host,
+		port,
+		c.DefaultSchema,
+	)
+	return exec.Command(c.Cmd, arg)
+}
+
+func (c *Credential) PostgreSQLTunnelCommand(port string) *exec.Cmd {
+	host := "127.0.0.1"
+	arg := fmt.Sprintf(
+		"postgresql://%s:%s@%s:%s/%s",
+		c.User,
+		c.Pass,
+		host,
+		port,
+		c.DefaultSchema,
+	)
+	return exec.Command(c.Cmd, arg)
+}
+
 type TunelConfig struct {
 	Host string `toml:"host"`
 	Port int    `toml:"port"`
