@@ -52,6 +52,12 @@ func newApp() *cli.App {
 			Usage:   "modifi DB credential",
 			Action:  cred,
 		},
+		{
+			Name:    "command",
+			Aliases: []string{"c"},
+			Usage:   "generate connection command",
+			Action:  command,
+		},
 	}
 	return app
 }
@@ -111,6 +117,34 @@ func connect(c *cli.Context) error {
 		if err := StanderdConnect(cred); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func command(c *cli.Context) error {
+	args := c.Args()
+	if len(args) == 0 {
+		return errors.New("required arguments were not provided: <alias>")
+	}
+
+	creds, err := LoadCredentials()
+	if err != nil {
+		return err
+	}
+
+	cred, err := creds.GetCredential(args[0])
+	if err != nil {
+		return err
+	}
+
+	switch cred.Cmd {
+	case "mysql", "mycli":
+		fmt.Println(cred.MySQLCommand())
+	case "psql", "pgcli":
+		fmt.Println(cred.PostgreSQLCommand())
+	default:
+		return fmt.Errorf("invalid command, %s", cred.Cmd)
 	}
 
 	return nil

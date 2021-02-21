@@ -58,7 +58,7 @@ func (c *Credential) SSHClientConfig() *ssh.ClientConfig {
 	return c.TunelCfg.SSHClientConfig()
 }
 
-func (c *Credential) MySQLCommand() *exec.Cmd {
+func (c *Credential) MySQLCommandArgs() []string {
 	args := []string{
 		"-u",
 		c.User,
@@ -78,7 +78,17 @@ func (c *Credential) MySQLCommand() *exec.Cmd {
 	if c.DefaultSchema != "" {
 		args = append(args, []string{"-D", c.DefaultSchema}...)
 	}
-	return exec.Command(c.Cmd, args...)
+	return args
+}
+
+func (c *Credential) MySQLCommand() *exec.Cmd {
+	return exec.Command(c.Cmd, c.MySQLCommandArgs()...)
+}
+
+func (c *Credential) MySQLCommandString() string {
+	args := []string{c.Cmd}
+	args = append(args, c.MySQLCommandArgs()...)
+	return strings.Join(args, " ")
 }
 
 func (c *Credential) MySQLTunnelCommand(port string) *exec.Cmd {
@@ -98,7 +108,7 @@ func (c *Credential) MySQLTunnelCommand(port string) *exec.Cmd {
 	return exec.Command(c.Cmd, args...)
 }
 
-func (c *Credential) PostgreSQLCommand() *exec.Cmd {
+func (c *Credential) PostgreSQLCommandArgs() string {
 	host := "127.0.0.1"
 	if c.Host != "" {
 		host = c.Host
@@ -115,7 +125,17 @@ func (c *Credential) PostgreSQLCommand() *exec.Cmd {
 		port,
 		c.DefaultSchema,
 	)
-	return exec.Command(c.Cmd, arg)
+	return arg
+}
+
+func (c *Credential) PostgreSQLCommand() *exec.Cmd {
+	return exec.Command(c.Cmd, c.PostgreSQLCommandArgs())
+}
+
+func (c *Credential) PostgreSQLCommandString() string {
+	args := []string{c.Cmd}
+	args = append(args, c.PostgreSQLCommandArgs())
+	return strings.Join(args, " ")
 }
 
 func (c *Credential) PostgreSQLTunnelCommand(port string) *exec.Cmd {
