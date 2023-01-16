@@ -118,12 +118,12 @@ func (c *Credential) PostgreSQLCommandArgs() string {
 		port = c.Port
 	}
 	arg := fmt.Sprintf(
-		"postgresql://%s:%s@%s:%d/%s",
-		c.User,
-		c.Pass,
+		"postgresql://%s:%d/%s?user=%s&password=%s",
 		host,
 		port,
 		c.DefaultSchema,
+		c.User,
+		c.Pass,
 	)
 	return arg
 }
@@ -141,12 +141,12 @@ func (c *Credential) PostgreSQLCommandString() string {
 func (c *Credential) PostgreSQLTunnelCommand(port string) *exec.Cmd {
 	host := "127.0.0.1"
 	arg := fmt.Sprintf(
-		"postgresql://%s:%s@%s:%s/%s",
-		c.User,
-		c.Pass,
+		"postgresql://%s:%s/%s?user=%s&password=%s",
 		host,
 		port,
 		c.DefaultSchema,
+		c.User,
+		c.Pass,
 	)
 	return exec.Command(c.Cmd, arg)
 }
